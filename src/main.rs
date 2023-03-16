@@ -1,4 +1,5 @@
-use dialoguer::Input;
+use anyhow::Result;
+use dialoguer::{console::Term, Input};
 
 mod files;
 
@@ -13,8 +14,11 @@ fn read_folder() -> String {
     folder
 }
 
-fn main() {
+fn main() -> Result<()> {
     let folder = read_folder();
-    let files = files::find_files(folder);
-    println!("{:?}", files);
+    let files = files::find_files(folder)?;
+    let term = Term::stdout();
+    term.write_line(&format!("Files: {:?}", files))?;
+
+    Ok(())
 }
