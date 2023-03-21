@@ -71,3 +71,18 @@ pub async fn ask_for_target_folder() -> Result<String> {
 
     Ok(folder)
 }
+
+pub fn replace() -> Result<bool> {
+    let replace_occurrences = Select::with_theme(&theme::ColorfulTheme::default())
+        .with_prompt("Do you want to replace the occurrences?")
+        .items(&["Yes", "No"])
+        .default(0)
+        .interact()?;
+
+    let res = match replace_occurrences {
+        0 => true,
+        _ => false,
+    };
+
+    Ok(res)
+}

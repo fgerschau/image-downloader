@@ -35,15 +35,7 @@ pub async fn download_images(occurrences: &Vec<Occurrence>, folder: String) -> R
             success_count += 1;
         }
 
-        let file_name = match occurrence.text.split('/').last() {
-            Some(file_name) => file_name,
-            None => {
-                println!("Error: no file name found in {}", occurrence.text);
-                continue;
-            }
-        };
-
-        let file_path = format!("{}/{}", folder, file_name);
+        let file_path = format!("{}/{}", folder, occurrence.file_name);
 
         let mut file = File::create(&file_path).await?;
 

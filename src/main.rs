@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     let folder = prompts::read_folder().await?;
     let target_folder = prompts::ask_for_target_folder().await?;
 
-    let files = files::find_files(folder)?;
+    let files = files::find_files(&folder)?;
     let image_occurrences = files::find_image_urls(&files)?;
 
     term.write_line(&format!(
@@ -59,10 +59,21 @@ async fn main() -> Result<()> {
         term.move_cursor_up(1)?;
         term.clear_line()?;
         term.write_line(&format!(
-            "\n{}/{} images downloaded successfully",
+            "\n{}/{} images downloaded successfully\n",
             download_count,
             image_occurrences.len()
         ))?;
+    }
+
+    let replace = prompts::replace()?;
+
+    if replace {
+        for occurrence in image_occurrences {
+            files::replace_occurrence(
+                &occurrence,
+                &format!("/{}/{}", &folder, &occurrence.file_name),
+            )?;
+        }
     }
 
     Ok(())
