@@ -1,33 +1,9 @@
 use anyhow::Result;
-use dialoguer::{console::Term, theme, Input, Select};
+use dialoguer::console::Term;
 
 mod files;
 mod images;
-
-fn read_folder() -> String {
-    let folder: String = Input::with_theme(&theme::ColorfulTheme::default())
-        .with_prompt("What is the folder you want to update?")
-        .default("src".to_string())
-        .show_default(true)
-        .interact()
-        .unwrap();
-
-    folder
-}
-
-fn download_and_replace_prompt() -> bool {
-    let download_and_replace = Select::with_theme(&theme::ColorfulTheme::default())
-        .with_prompt("Do you want to download the images?")
-        .items(&["Yes", "No"])
-        .default(0)
-        .interact()
-        .unwrap();
-
-    match download_and_replace {
-        0 => true,
-        _ => false,
-    }
-}
+mod prompts;
 
 fn group_occurrences_by_file(
     occurrences: &Vec<files::Occurrence>,
@@ -44,22 +20,11 @@ fn group_occurrences_by_file(
     occurrences_by_file
 }
 
-fn ask_for_target_folder() -> String {
-    let target_folder: String = Input::with_theme(&theme::ColorfulTheme::default())
-        .with_prompt("What is the target folder?")
-        .default("public".to_string())
-        .show_default(true)
-        .interact()
-        .unwrap();
-
-    target_folder
-}
-
 fn main() -> Result<()> {
     let term = Term::stdout();
 
-    let folder = read_folder();
-    let target_folder = ask_for_target_folder();
+    let folder = prompts::read_folder();
+    let target_folder = prompts::ask_for_target_folder();
 
     let files = files::find_files(folder)?;
     let image_occurrences = files::find_image_urls(&files)?;
@@ -83,7 +48,7 @@ fn main() -> Result<()> {
 
     term.write_line("\n")?;
 
-    let download_and_replace = download_and_replace_prompt();
+    let download_and_replace = prompts::download_and_replace();
 
     if download_and_replace {
         term.write_line("Downloading images...")?;
@@ -93,7 +58,7 @@ fn main() -> Result<()> {
         term.move_cursor_up(1)?;
         term.clear_line()?;
         term.write_line(&format!(
-            "{}/{} images downloaded successfully",
+            "\n{}/{} images downloaded successfully",
             download_count,
             image_occurrences.len()
         ))?;
