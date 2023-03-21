@@ -88,11 +88,15 @@ fn main() -> Result<()> {
     if download_and_replace {
         term.write_line("Downloading images...")?;
 
-        images::download_images(&image_occurrences, target_folder)?;
+        let download_count = images::download_images(&image_occurrences, target_folder)?;
 
         term.move_cursor_up(1)?;
         term.clear_line()?;
-        term.write_line("Images downloaded!")?;
+        term.write_line(&format!(
+            "{}/{} images downloaded successfully",
+            download_count,
+            image_occurrences.len()
+        ))?;
     }
 
     Ok(())

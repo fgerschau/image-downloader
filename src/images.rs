@@ -18,17 +18,23 @@ fn to_tokio_async_read(r: impl futures::io::AsyncRead) -> impl tokio::io::AsyncR
 }
 
 #[tokio::main]
-pub async fn download_images(occurrences: &Vec<Occurrence>, folder: String) -> Result<()> {
+pub async fn download_images(occurrences: &Vec<Occurrence>, folder: String) -> Result<u32> {
     let client = get_client();
+    let mut success_count = 0;
 
     let bar = ProgressBar::new(occurrences.len() as u64);
     for occurrence in occurrences {
         bar.inc(1);
         let uri = occurrence.text.parse::<hyper::Uri>()?;
         let request = Request::get(uri)
-            .header("User-Agent", "Mozilla/5.0")
+            .header("User-Agent", "Mozilla/5.0") // Some websites require a user agent
             .body(Body::empty())?;
+
         let response = client.request(request).await?;
+
+        if response.status().is_success() {
+            success_count += 1;
+        }
 
         let file_name = match occurrence.text.split('/').last() {
             Some(file_name) => file_name,
@@ -54,5 +60,5 @@ pub async fn download_images(occurrences: &Vec<Occurrence>, folder: String) -> R
         copy(&mut tokio_async_read, &mut file).await?;
     }
 
-    Ok(())
+    Ok(success_count)
 }
