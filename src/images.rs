@@ -3,6 +3,7 @@ use anyhow::Result;
 use futures::{StreamExt, TryStreamExt};
 use hyper::{Body, Client, Request};
 use hyper_tls::HttpsConnector;
+use indicatif::ProgressBar;
 use tokio::fs::File;
 use tokio::io::copy;
 use tokio_util;
@@ -20,9 +21,13 @@ fn to_tokio_async_read(r: impl futures::io::AsyncRead) -> impl tokio::io::AsyncR
 pub async fn download_images(occurrences: &Vec<Occurrence>, folder: String) -> Result<()> {
     let client = get_client();
 
+    let bar = ProgressBar::new(occurrences.len() as u64);
     for occurrence in occurrences {
+        bar.inc(1);
         let uri = occurrence.text.parse::<hyper::Uri>()?;
-        let request = Request::get(uri).body(Body::empty())?;
+        let request = Request::get(uri)
+            .header("User-Agent", "Mozilla/5.0")
+            .body(Body::empty())?;
         let response = client.request(request).await?;
 
         let file_name = match occurrence.text.split('/').last() {

@@ -17,7 +17,7 @@ fn read_folder() -> String {
 
 fn download_and_replace_prompt() -> bool {
     let download_and_replace = Select::with_theme(&theme::ColorfulTheme::default())
-        .with_prompt("Do you want to download and replace the images?")
+        .with_prompt("Do you want to download the images?")
         .items(&["Yes", "No"])
         .default(0)
         .interact()
@@ -86,10 +86,13 @@ fn main() -> Result<()> {
     let download_and_replace = download_and_replace_prompt();
 
     if download_and_replace {
+        term.write_line("Downloading images...")?;
+
         images::download_images(&image_occurrences, target_folder)?;
 
-        let bar = indicatif::ProgressBar::new_spinner();
-        bar.finish_and_clear();
+        term.move_cursor_up(1)?;
+        term.clear_line()?;
+        term.write_line("Images downloaded!")?;
     }
 
     Ok(())
