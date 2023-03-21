@@ -1,4 +1,5 @@
 use anyhow::Result;
+use indicatif::ProgressBar;
 use regex::Regex;
 use std::fs;
 use std::io::{Error, ErrorKind};
@@ -76,7 +77,7 @@ pub fn find_image_urls(files: &Vec<String>) -> Result<Vec<Occurrence>> {
     Ok(occurrences)
 }
 
-pub fn replace_occurrence(occurrence: &Occurrence, new_text: &str) -> Result<()> {
+fn replace_occurrence(occurrence: &Occurrence, new_text: &str) -> Result<()> {
     let contents = fs::read_to_string(occurrence.file.clone())?;
     let mut lines: Vec<&str> = contents.lines().collect();
 
@@ -103,5 +104,21 @@ pub fn replace_occurrence(occurrence: &Occurrence, new_text: &str) -> Result<()>
 
     fs::write(occurrence.file.clone(), new_contents)?;
 
+    Ok(())
+}
+
+pub fn replace_occurrences(occurrences: &Vec<Occurrence>, target_folder: &str) -> Result<()> {
+    let bar = ProgressBar::new(occurrences.len() as u64);
+    bar.set_message("Replacing occurrences...");
+    for occurrence in occurrences {
+        bar.inc(1);
+        replace_occurrence(
+            &occurrence,
+            &format!("/{}/{}", &target_folder, &occurrence.file_name),
+        )?;
+    }
+
+    bar.set_message("Done!");
+    bar.finish();
     Ok(())
 }

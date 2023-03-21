@@ -1,6 +1,5 @@
 use anyhow::Result;
 use dialoguer::console::Term;
-use indicatif::ProgressBar;
 
 mod files;
 mod images;
@@ -69,19 +68,7 @@ async fn main() -> Result<()> {
     let replace = prompts::replace()?;
 
     if replace {
-        let bar = ProgressBar::new(image_occurrences.len() as u64);
-        bar.set_message("Replacing occurrences...");
-        for occurrence in image_occurrences {
-            bar.inc(1);
-            files::replace_occurrence(
-                &occurrence,
-                &format!("/{}/{}", &target_folder, &occurrence.file_name),
-            )?;
-        }
-
-        bar.set_message("Done!");
-        bar.finish();
-
+        files::replace_occurrences(&image_occurrences, &target_folder)?;
         term.write_line(&format!("\nOccurrences replaced successfully\n",))?;
     }
 
