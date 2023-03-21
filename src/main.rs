@@ -20,11 +20,12 @@ fn group_occurrences_by_file(
     occurrences_by_file
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let term = Term::stdout();
 
-    let folder = prompts::read_folder();
-    let target_folder = prompts::ask_for_target_folder();
+    let folder = prompts::read_folder().await?;
+    let target_folder = prompts::ask_for_target_folder().await?;
 
     let files = files::find_files(folder)?;
     let image_occurrences = files::find_image_urls(&files)?;
@@ -48,12 +49,12 @@ fn main() -> Result<()> {
 
     term.write_line("\n")?;
 
-    let download_and_replace = prompts::download_and_replace();
+    let download_and_replace = prompts::download_and_replace()?;
 
     if download_and_replace {
         term.write_line("Downloading images...")?;
 
-        let download_count = images::download_images(&image_occurrences, target_folder)?;
+        let download_count = images::download_images(&image_occurrences, target_folder).await?;
 
         term.move_cursor_up(1)?;
         term.clear_line()?;

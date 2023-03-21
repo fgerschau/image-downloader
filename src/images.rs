@@ -17,7 +17,6 @@ fn to_tokio_async_read(r: impl futures::io::AsyncRead) -> impl tokio::io::AsyncR
     tokio_util::compat::FuturesAsyncReadCompatExt::compat(r)
 }
 
-#[tokio::main]
 pub async fn download_images(occurrences: &Vec<Occurrence>, folder: String) -> Result<u32> {
     let client = get_client();
     let mut success_count = 0;
