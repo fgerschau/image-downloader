@@ -1,5 +1,6 @@
 use anyhow::Result;
 use dialoguer::console::Term;
+use indicatif::ProgressBar;
 
 mod files;
 mod images;
@@ -54,7 +55,7 @@ async fn main() -> Result<()> {
     if download_and_replace {
         term.write_line("Downloading images...")?;
 
-        let download_count = images::download_images(&image_occurrences, target_folder).await?;
+        let download_count = images::download_images(&image_occurrences, &target_folder).await?;
 
         term.move_cursor_up(1)?;
         term.clear_line()?;
@@ -68,12 +69,20 @@ async fn main() -> Result<()> {
     let replace = prompts::replace()?;
 
     if replace {
+        let bar = ProgressBar::new(image_occurrences.len() as u64);
+        bar.set_message("Replacing occurrences...");
         for occurrence in image_occurrences {
+            bar.inc(1);
             files::replace_occurrence(
                 &occurrence,
-                &format!("/{}/{}", &folder, &occurrence.file_name),
+                &format!("/{}/{}", &target_folder, &occurrence.file_name),
             )?;
         }
+
+        bar.set_message("Done!");
+        bar.finish();
+
+        term.write_line(&format!("\nOccurrences replaced successfully\n",))?;
     }
 
     Ok(())
